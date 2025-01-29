@@ -62,7 +62,7 @@ jobs:
             /d:sonar.exclusions="**/Migrations/*" `
             /d:sonar.coverage.exclusions="**/Program.cs,**/bootstrap.cs, **/Terraform/**/*"
 
-          echo ${{ secrets.SONAR_HOST_URL }}
+          echo "${{ secrets.SONAR_HOST_URL }}"
           dotnet restore ./CodeAcademy
           dotnet build ./CodeAcademy
           dotnet test ./CodeAcademy --logger trx --collect:"XPlat Code Coverage" --results-directory TestResults/ --configuration release -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
