@@ -56,19 +56,19 @@ jobs:
         run: |
           ../.sonar/scanner/dotnet-sonarscanner begin `
             /k:"Code-Academy" `
-            /d:sonar.login="${{ secrets.SONAR_TOKEN }}" `
-            /d:sonar.host.url="${{ secrets.SONAR_HOST_URL }}" `
+            /d:sonar.login="sqp_3d49b0e938d093da9ef13fe7afc0f2866cc4df20" `
+            /d:sonar.host.url="https://sonarqube-code-academy-sonarqube2.apps.cicd.arcus.soprasteria.com/" `
             /d:sonar.cs.opencover.reportsPaths="**/coverage.opencover.xml" `
             /d:sonar.exclusions="**/Migrations/*" `
             /d:sonar.coverage.exclusions="**/Program.cs,**/bootstrap.cs, **/Terraform/**/*"
 
-          echo "${{ secrets.SONAR_HOST_URL }}"
+          echo "https://sonarqube-code-academy-sonarqube2.apps.cicd.arcus.soprasteria.com/"
           dotnet restore ./CodeAcademy
           dotnet build ./CodeAcademy
           dotnet test ./CodeAcademy --logger trx --collect:"XPlat Code Coverage" --results-directory TestResults/ --configuration release -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
 
           ../.sonar/scanner/dotnet-sonarscanner end `
-            /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
+            /d:sonar.token="sqp_3d49b0e938d093da9ef13fe7afc0f2866cc4df20"
 
       - name: Upload dotnet test results        
         if: ${{ always() }} # To always run this step to publish test results when there are test failures
