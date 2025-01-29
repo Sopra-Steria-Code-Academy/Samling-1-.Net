@@ -11,7 +11,7 @@ jobs:
   test:
     name: Test
     if: ${{ !github.event.pull_request.draft }}
-    uses: "./.github/workflows/deploy-template.yml"
+    uses: "./.github/workflows/template/deploy-template.yml"
     secrets: inherit 
     with:
       environment-name: 'Test'
