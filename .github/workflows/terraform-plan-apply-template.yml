@@ -1,0 +1,139 @@
+name: Template for Terraform Plan and Apply
+
+on:
+  workflow_call:
+    inputs:
+      environment-name:
+        type: string
+        required: true
+    secrets:
+      client-id:
+        required: true
+      subscription-id:
+        required: true
+      tenant-id:
+        required: true
+
+#These environment variables are used by the Terraform Azure provider to setup OIDC authenticate.
+env:
+  ARM_CLIENT_ID: ${{ secrets.client-id }}
+  ARM_SUBSCRIPTION_ID: ${{ secrets.subscription-id }}
+  ARM_TENANT_ID: ${{ secrets.tenant-id }}
+
+#Special permissions required for OIDC authentication
+permissions:
+  id-token: write
+  contents: read
+  pull-requests: write
+
+jobs:
+  plan:
+    name: Terraform Plan - ${{ inputs.environment-name }}
+    runs-on: ubuntu-latest
+    environment: terraform-plan
+    defaults:
+      run:
+        working-directory: "./Terraform"
+    env:
+      #this is needed since we are running terraform with read-only permissions
+      ARM_SKIP_PROVIDER_REGISTRATION: true
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Init
+        run: terraform init --upgrade
+
+      - name: Terraform Format
+        run: terraform fmt -check -recursive
+
+      - name: Terraform Plan
+        id: tf-plan
+        run: |
+          terraform plan -detailed-exitcode -no-color -out ${{ inputs.environment-name }}.tfplan
+
+      # Exitcode = 0 means no changes, 1 is error, and 2 means pending changes.   
+      - name: Check Terraform Plan
+        if: ${{ steps.tf-plan.outputs.exitcode == 1}}
+        run: |
+          echo "Terraform Plan Failed!"
+          exit 1
+
+      # Save plan to artifacts
+      - name: Publish Terraform Plan
+        uses: actions/upload-artifact@v4
+        with:
+          name: "${{ inputs.environment-name }}.tfplan"
+          path: "Terraform//${{ inputs.environment-name }}.tfplan"
+
+      # Create string output of Terraform Plan
+      - name: Create String Output
+        id: tf-plan-string
+        run: |
+          TERRAFORM_PLAN=$(terraform show -no-color "${{ inputs.environment-name }}.tfplan")
+          delimiter="$(openssl rand -hex 8)"
+          echo "summary<<${delimiter}" >> $GITHUB_OUTPUT
+          echo "## Terraform Plan - ${{ inputs.environment-name }}" >> $GITHUB_OUTPUT
+          echo "<details><summary>Click to expand</summary>" >> $GITHUB_OUTPUT
+          echo "" >> $GITHUB_OUTPUT
+          echo '```terraform' >> $GITHUB_OUTPUT
+          echo "$TERRAFORM_PLAN" >> $GITHUB_OUTPUT
+          echo '```' >> $GITHUB_OUTPUT
+          echo "</details>" >> $GITHUB_OUTPUT
+          echo "${delimiter}" >> $GITHUB_OUTPUT
+
+      # Publish Terraform Plan as task summary
+      - name: Publish Terraform Plan to Task Summary
+        env:
+          SUMMARY: ${{ steps.tf-plan-string.outputs.summary }}
+        run: |
+          echo "$SUMMARY" >> $GITHUB_STEP_SUMMARY
+
+      # If this is a PR post the changes
+      - name: Push Terraform Output to PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        env:
+          SUMMARY: "${{ steps.tf-plan-string.outputs.summary }}"
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const body = `${process.env.SUMMARY}`;
+            github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: body
+            })
+
+  apply:  
+    name: Terraform Apply - ${{ inputs.environment-name }}
+    runs-on: ubuntu-latest
+    environment: terraform-apply-${{ inputs.environment-name }}
+    needs: plan
+    if: inputs.environment-name == 'test'  || github.ref == 'refs/heads/main'
+    defaults:
+      run:
+        working-directory: "./Terraform"
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+
+    - name: Terraform Init
+      run: terraform init --upgrade
+
+    - name: Download Terraform Plan
+      uses: actions/download-artifact@v4
+      with:
+        name: "${{ inputs.environment-name }}.tfplan"
+        path: ./Terraform
+
+    - name: Terraform Apply
+      run: terraform apply -auto-approve "${{ inputs.environment-name }}.tfplan"

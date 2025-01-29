@@ -1,0 +1,178 @@
+name: Template for Terraform Drift Detection
+
+on:
+  workflow_call:
+    inputs:
+      environment-name:
+        type: string
+        required: true
+    secrets:
+      client-id:
+        required: true
+      subscription-id:
+        required: true
+      tenant-id:
+        required: true
+
+
+#Special permissions required for OIDC authentication
+permissions:
+  id-token: write
+  contents: read
+  issues: write
+
+#These environment variables are used by the Terraform Azure provider to setup OIDC authenticate.
+env:
+  ARM_CLIENT_ID: ${{ secrets.client-id }}
+  ARM_SUBSCRIPTION_ID: ${{ secrets.subscription-id }}
+  ARM_TENANT_ID: ${{ secrets.tenant-id }}
+
+jobs:
+  drift-detection:
+    name: Terraform Drift Detection - ${{ inputs.environment-name }}
+    runs-on: ubuntu-latest
+    environment: terraform-plan
+    defaults:
+      run:
+        working-directory: ./Terraform
+    env:
+      #this is needed since we are running terraform with read-only permissions
+      ARM_SKIP_PROVIDER_REGISTRATION: true
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Init
+        run: terraform init --upgrade
+
+      - name: Terraform Plan
+        id: tf-plan
+        run: |
+          terraform plan -detailed-exitcode -no-color -out ${{ inputs.environment-name }}.tfplan
+
+      # Exitcode = 0 means no changes, 1 is error, and 2 means pending changes.   
+      - name: Check Terraform Plan
+        if: ${{ steps.tf-plan.outputs.exitcode == 1}}
+        run: |
+          echo "Terraform Plan Failed!"
+          exit 1
+
+      # Save plan to artifacts
+      - name: Publish Terraform Plan
+        uses: actions/upload-artifact@v4
+        with:
+          name: "${{ inputs.environment-name }}.tfplan"
+          path: "terraform//${{ inputs.environment-name }}/${{ inputs.environment-name }}.tfplan"
+
+      # Create string output of Terraform Plan
+      - name: Create String Output
+        id: tf-plan-string
+        run: |
+          TERRAFORM_PLAN=$(terraform show -no-color "${{ inputs.environment-name }}.tfplan")
+
+          delimiter="$(openssl rand -hex 8)"
+          echo "summary<<${delimiter}" >> $GITHUB_OUTPUT
+          echo "## Terraform Plan - ${{ inputs.environment-name }}" >> $GITHUB_OUTPUT
+          echo "<details><summary>Click to expand</summary>" >> $GITHUB_OUTPUT
+          echo "" >> $GITHUB_OUTPUT
+          echo '```terraform' >> $GITHUB_OUTPUT
+          echo "$TERRAFORM_PLAN" >> $GITHUB_OUTPUT
+          echo '```' >> $GITHUB_OUTPUT
+          echo "</details>" >> $GITHUB_OUTPUT
+          echo "${delimiter}" >> $GITHUB_OUTPUT
+
+      # Publish Terraform Plan as task summary
+      - name: Publish Terraform Plan to Task Summary
+        env:
+          SUMMARY: ${{ steps.tf-plan-string.outputs.summary }}
+        run: |
+          echo "$SUMMARY" >> $GITHUB_STEP_SUMMARY
+
+      # If changes are detected, create a new issue
+      - name: Create new drift issue
+        if: steps.tf-plan.outputs.exitcode == 2
+        uses: actions/github-script@v7
+        env:
+          SUMMARY: "${{ steps.tf-plan-string.outputs.summary }}"
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const body = `${process.env.SUMMARY}`;
+            const title = 'Terraform Configuration Drift Detected - ${{ inputs.environment-name }}';
+            const creator = 'github-actions[bot]';
+            let foundIssue = false; 
+
+            // Look to see if there is an existing drift issue
+            const response = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              creator: creator,
+              title: title
+            })
+            const issues = response.data;
+            for (const issue of issues) {
+              if (issue.title == 'Terraform Configuration Drift Detected - ${{ inputs.environment-name }}') {
+                foundIssue = true;
+                if ( issue.body == body ) {
+                  console.log('Drift Detected: Found matching issue with duplicate content')
+                } else {
+                  console.log('Drift Detected: Found matching issue, updating body')
+                  github.rest.issues.update({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: issue.number,
+                    body: body
+                  })
+                }
+              }
+            } 
+            if (!foundIssue) {
+              console.log('Drift Detected: Creating new issue')
+              
+              github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: title,
+                body: body
+              })
+            }
+
+      # If changes aren't detected, close any open drift issues
+      - name: Close open drift issues
+        if: steps.tf-plan.outputs.exitcode == 0
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const title = 'Terraform Configuration Drift Detected - ${{ inputs.environment-name }} ';
+            const creator = 'github-actions[bot]'
+
+            // Look to see if there is an existing drift issue
+            const response = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              creator: creator,
+              title: title
+            })
+            const issues = response.data;  
+            for (const issue of issues) {
+              if (issue.title == 'Terraform Configuration Drift Detected - ${{ inputs.environment-name }}') {
+                github.rest.issues.update({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue.number,
+                  state: 'closed'
+                })
+              }
+            }
+
+      # Mark the workflow as failed if drift detected
+      - name: Error if drift detected
+        if: steps.tf-plan.outputs.exitcode == 2
+        run: exit 1
