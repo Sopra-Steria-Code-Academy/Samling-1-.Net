@@ -56,7 +56,7 @@ jobs:
         run: |
           ../.sonar/scanner/dotnet-sonarscanner begin `
             /k:"Code-Academy" `
-            /d:sonar.login="${{ secrets.SONAR_TOKEN }}" `
+            /d:sonar.token="${{ secrets.SONAR_TOKEN }}" `
             /d:sonar.host.url="${{ secrets.SONAR_HOST_URL }}" `
             /d:sonar.cs.opencover.reportsPaths="**/coverage.opencover.xml" `
             /d:sonar.exclusions="**/Migrations/*" `
@@ -67,7 +67,7 @@ jobs:
           dotnet test ./CodeAcademy --logger trx --collect:"XPlat Code Coverage" --results-directory TestResults/ --configuration release -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
 
           ../.sonar/scanner/dotnet-sonarscanner end `
-            /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
+            /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
 
       - name: Upload dotnet test results        
         if: ${{ always() }} # To always run this step to publish test results when there are test failures
