@@ -63,13 +63,12 @@ jobs:
             /d:sonar.exclusions="**/Migrations/*" `
             /d:sonar.coverage.exclusions="**/Program.cs,**/bootstrap.cs, **/Terraform/**/*"
 
-          echo "${{ secrets.SONAR_HOST_URL }}"
           dotnet restore ./CodeAcademy
           dotnet build ./CodeAcademy
           dotnet test ./CodeAcademy --logger trx --collect:"XPlat Code Coverage" --results-directory TestResults/ --configuration release -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
 
           ../.sonar/scanner/dotnet-sonarscanner end `
-            /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
+            /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
 
       - name: Upload dotnet test results        
         if: ${{ always() }} # To always run this step to publish test results when there are test failures
