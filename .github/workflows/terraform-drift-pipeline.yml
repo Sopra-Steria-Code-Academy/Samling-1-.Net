@@ -15,7 +15,7 @@ jobs:
   terraform-drift-test:
     name: "Test"
     #uses: "TestOrg/TestRepository/.github/workflows/terraform-drift-template.yml@main"
-    uses: "./.github/workflows/template/terraform-drift-template.yml"
+    uses: "./.github/workflows/terraform-drift-template.yml"
     with:
       environment-name: 'test'
     secrets:

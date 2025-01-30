@@ -23,7 +23,7 @@ jobs:
   terraform-plan-apply-test:
     name: "Test"
     #uses: "HydroREIN/REIN-Hub/.github/workflows/terraform-plan-apply-template.yml@main"
-    uses: "./.github/workflows/template/terraform-plan-apply-template.yml"
+    uses: "./.github/workflows/terraform-plan-apply-template.yml"
     with:
       environment-name: 'test'
     secrets:
