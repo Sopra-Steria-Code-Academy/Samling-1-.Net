@@ -16,4 +16,4 @@ jobs:
     secrets: inherit 
     with:
       environment-name: 'Test'
-      webapp-name: 'samling1-api-test'
+      webapp-name: 'CodeAcademyTestApp'
