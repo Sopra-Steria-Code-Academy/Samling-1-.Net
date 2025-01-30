@@ -5,12 +5,12 @@ on:
     branches:
       - main
     paths:
-      - '**/Terraform/**'  
+      - '**/terraform/**'  
   pull_request:
     branches:
       - main
     paths:
-    - '**/Terraform/**'
+    - '**/terraform/**'
   workflow_dispatch:
 
 #Special permissions required for OIDC authentication
@@ -23,7 +23,7 @@ jobs:
   terraform-plan-apply-test:
     name: "Test"
     #uses: "HydroREIN/REIN-Hub/.github/workflows/terraform-plan-apply-template.yml@main"
-    uses: "./.github/workflows/terraform-plan-apply-template.yml"
+    uses: "Sopra-Steria-Code-Academy/Samling-1-Templates/.github/workflows/terraform-plan-apply-template.yml"
     with:
       environment-name: 'test'
     secrets:
