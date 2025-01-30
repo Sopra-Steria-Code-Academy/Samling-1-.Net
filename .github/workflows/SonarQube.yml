@@ -55,7 +55,7 @@ jobs:
         shell: pwsh
         run: |
           ../.sonar/scanner/dotnet-sonarscanner begin `
-            /k:"Code-Academy" `
+            /k:"Code-Academy-.Net" `
             /d:sonar.login="${{ secrets.SONAR_TOKEN }}" `
             /d:sonar.host.url="${{ secrets.SONAR_HOST_URL }}" `
             /d:sonar.cs.opencover.reportsPaths="**/coverage.opencover.xml" `
