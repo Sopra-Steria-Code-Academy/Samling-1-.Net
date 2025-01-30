@@ -11,7 +11,7 @@ variable "rg_name" {
 
 variable "rg_location" {
   type        = string
-  description = "Azure region for Right Cloud resources"
+  description = "Azure region for Right Cloud resources2"
   default     = "West Europe"
 }
 
