@@ -29,8 +29,8 @@ jobs:
 
       - name: Build solution
         run: |
-          dotnet restore
-          dotnet build
+          dotnet restore ./CodeAcademy
+          dotnet build ./CodeAcademy
       
       - name: Azure login
         uses: azure/login@v2
@@ -38,7 +38,7 @@ jobs:
           creds: '{"clientId":"${{ secrets.AZURE_CLIENT_ID }}","clientSecret":"${{ secrets.AZURE_CLIENT_SECRET }}","subscriptionId":"${{ secrets.AZURE_SUBSCRIPTION_ID }}","tenantId":"${{ secrets.AZURE_TENANT_ID }}"}'
 
       - name: Create Publish Folder
-        run: dotnet publish -c Release --property PublishDir="../myapp"
+        run: dotnet publish ./CodeAcademy -c Release --property PublishDir="../myapp"
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
