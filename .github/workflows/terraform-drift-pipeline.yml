@@ -14,8 +14,7 @@ permissions:
 jobs:
   terraform-drift-test:
     name: "Test"
-    #uses: "TestOrg/TestRepository/.github/workflows/terraform-drift-template.yml@main"
-    uses: "Sopra-Steria-Code-Academy/Samling-1-Templates/.github/workflows/terraform-drift-template.yml"
+    uses: "Sopra-Steria-Code-Academy/Samling-1-Templates/.github/workflows/terraform-drift-template.yml@main"
     with:
       environment-name: 'test'
     secrets:
