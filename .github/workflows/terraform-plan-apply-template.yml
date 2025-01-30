@@ -33,7 +33,7 @@ jobs:
     environment: terraform-plan
     defaults:
       run:
-        working-directory: "./Terraform"
+        working-directory: "./CodeAcademy/Terraform"
     env:
       #this is needed since we are running terraform with read-only permissions
       ARM_SKIP_PROVIDER_REGISTRATION: true
@@ -118,7 +118,7 @@ jobs:
     if: inputs.environment-name == 'test'  || github.ref == 'refs/heads/main'
     defaults:
       run:
-        working-directory: "./Terraform"
+        working-directory: "./CodeAcademy/Terraform"
     steps:
     - name: Checkout
       uses: actions/checkout@v4
@@ -133,7 +133,7 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         name: "${{ inputs.environment-name }}.tfplan"
-        path: ./Terraform
+        path: ./CodeAcademy/Terraform
 
     - name: Terraform Apply
       run: terraform apply -auto-approve "${{ inputs.environment-name }}.tfplan"
