@@ -16,7 +16,7 @@ jobs:
     name: "Test"
     uses: "Sopra-Steria-Code-Academy/Samling-1-Templates/.github/workflows/terraform-drift-template.yml@main"
     with:
-      environment-name: 'test'
+      environment-name: 'terraform-plan'
     secrets:
       client-id: ${{ secrets.TF_AZURE_CLIENT_ID }}
       subscription-id: ${{ secrets.TF_AZURE_SUBSCRIPTION_ID }}
