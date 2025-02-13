@@ -19,6 +19,7 @@ resource "azurerm_linux_web_app" "main" {
 
   site_config {
     http2_enabled = true
+    app_command_line = "dotnet ./CodeAcademy.dll"
   }
 
   identity {
