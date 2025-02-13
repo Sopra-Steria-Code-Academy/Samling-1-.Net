@@ -56,7 +56,7 @@ jobs:
 
     steps:
       - name: Cleanup conflicting artifact directory (only on self-hosted)
-        if: contains(runner.labels, 'self-hosted')
+        if: runner.environment == 'self-hosted'
         run: rm -rf ${{env.AZURE_WEBAPP_PACKAGE_PATH}}/CodeAcademy
 
       - name: Download artifact from build job
