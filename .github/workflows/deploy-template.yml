@@ -19,12 +19,7 @@ jobs:
     name: Build
     runs-on: self-hosted
     environment: ${{ inputs.environment-name }}
-    steps:
-      # On the self hosted runners we need to clean up old build files before new build (not relevant for normal Github Actions action)
-      - name: Cleanup previous runs (only on self-hosted)
-        if: contains(runner.labels, 'self-hosted')
-        run: rm -rf /home/runner/actions-runner/_work/*
-        
+    steps:        
       - uses: actions/checkout@v4
         
       - name: Setup .NET
@@ -60,6 +55,11 @@ jobs:
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}/swagger/index.html
 
     steps:
+      # On the self hosted runners we need to clean up old build files before new build (not relevant for normal Github Actions action)
+      - name: Cleanup previous runs (only on self-hosted)
+        if: contains(runner.labels, 'self-hosted')
+        run: rm -rf /home/runner/actions-runner/_work/*
+        
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
         with:
