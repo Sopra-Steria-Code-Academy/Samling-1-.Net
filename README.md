@@ -1,6 +1,6 @@
-#Samling 1
+# Samling 1
 
-##Oppgaver
+## Oppgaver
 1. Lag en github action som bygger prosjektet ditt
 2. Lag en github action som kjører kodeanalyse mot sonarqube
    - Legg inn en SONAR_HOST_URL som secrets i ditt repository 
