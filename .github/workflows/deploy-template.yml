@@ -57,7 +57,7 @@ jobs:
     steps:
       # On the self hosted runners we need to clean up old build files before new build (not relevant for normal Github Actions action)
       - name: Cleanup previous runs (only on self-hosted)
-        if: contains(runner.labels, 'self-hosted')
+        if: runner.environment == 'self-hosted'
         run: rm -rf /home/runner/actions-runner/_work/*
         
       - name: Download artifact from build job
