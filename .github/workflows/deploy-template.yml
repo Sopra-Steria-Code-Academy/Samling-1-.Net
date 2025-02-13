@@ -59,6 +59,8 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: .net-app-${{ inputs.environment-name }}
+        env: # This isnt needed when running in Githubs own runners, but needs to be specified if running on self hosted runners
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
