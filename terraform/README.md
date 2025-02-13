@@ -14,14 +14,14 @@ A keyvault belonging to the test environemnt of the ReinHub-Api application, sho
 The repository has 3 pipelines that run in GitHub when you create a Pull Request:
 - TF-drift - detects if there are any changes between existing infrastructure and Terraform definition
 - TF-plan-apply - creates an execution plan and then applies it (when PR is merged to main branch)
-- TF-unit-test - runs quick check on tf-files to validate them and check formatting
 
 Some of the pipelines will break if the TF-files have some formatting issues.
 It is a easy way to solve this issue before pushing the code:
 1. Download the terraform.exe file from [HashiCorp](https://developer.hashicorp.com/terraform/install)
 	- Then copy it to preffered folder 
 	- Add this folder to enviroment variable PATH 
-2. Or download [Chocolatey](https://chocolatey.org/install) and run command	- choco install terraform
+2. Or download [Chocolatey](https://chocolatey.org/install) and run command
+	- choco install terraform
 3. Run the following command:
 	- .\terraform init
 	- .\terraform validate
