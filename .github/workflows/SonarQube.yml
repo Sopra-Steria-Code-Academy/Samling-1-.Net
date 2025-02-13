@@ -48,7 +48,9 @@ jobs:
         if: steps.cache-sonar-scanner.outputs.cache-hit != 'true'
         shell: pwsh
         run: |
-          New-Item -Path ../.sonar/scanner -ItemType Directory
+          if (!(Test-Path "../.sonar/scanner")) {
+            New-Item -Path "../.sonar/scanner" -ItemType Directory
+          }
           dotnet tool update dotnet-sonarscanner --tool-path ../.sonar/scanner
 
       - name: Perform SonarQube Analysis
