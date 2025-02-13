@@ -20,10 +20,13 @@ jobs:
     runs-on: self-hosted
     environment: ${{ inputs.environment-name }}
     steps:
+      # On the self hosted runners we need to clean up old build files before new build (not relevant for normal Github Actions action)
+      - name: Cleanup previous runs (only on self-hosted)
+        if: contains(runner.labels, 'self-hosted')
+        run: rm -rf /home/runner/actions-runner/_work/*
+        
       - uses: actions/checkout@v4
-        with:
-          clean: true # Ensures a fresh checkout and removes previous build files
-
+        
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
