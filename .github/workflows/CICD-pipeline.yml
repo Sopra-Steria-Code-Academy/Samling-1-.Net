@@ -16,4 +16,4 @@ jobs:
     secrets: inherit 
     with:
       environment-name: 'Test'
-      webapp-name: 'CodeAcademyTestApp'
+      webapp-name: 'CodeAcademy-Net-AppService-test'
