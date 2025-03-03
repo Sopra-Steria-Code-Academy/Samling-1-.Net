@@ -1,0 +1,35 @@
+name: Terraform Drift Detection Pipeline
+
+#on:
+#  schedule:
+#    - cron: 0 6 * * * # every night at 6:00 am
+#  workflow_dispatch:
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '**/terraform/**'
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths:
+      - '**/terraform/**'
+  workflow_dispatch:
+
+#Special permissions required for OIDC authentication
+permissions:
+  contents: read
+  issues: write
+    
+jobs:
+  terraform-drift-test:
+    name: "Test"
+    uses: "Sopra-Steria-Code-Academy/Samling-1-Templates/.github/workflows/terraform-drift-template.yml@main"
+    with:
+      environment-name: 'terraform-plan'
+    secrets:
+      client-id: ${{ secrets.TF_AZURE_CLIENT_ID }}
+      subscription-id: ${{ secrets.TF_AZURE_SUBSCRIPTION_ID }}
+      tenant-id: ${{ secrets.TF_AZURE_TENANT_ID }}
+      client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
