@@ -2,16 +2,28 @@ name: Terraform Plan and Apply
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
     paths:
-      - '**/terraform/**'  
+      - '**/terraform/**'
   pull_request:
-    branches:
-      - main
+    branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review]
     paths:
-    - '**/terraform/**'
+      - '**/terraform/**'
   workflow_dispatch:
+
+#on:
+#  push:
+#    branches:
+#      - main
+#    paths:
+#      - '**/terraform/**'  
+#  pull_request:
+#    branches:
+#      - main
+#    paths:
+#      - '**/terraform/**'
+#  workflow_dispatch:
 
 #Special permissions required for OIDC authentication
 permissions:
@@ -29,3 +41,4 @@ jobs:
       client-id: ${{ secrets.TF_AZURE_CLIENT_ID }}
       subscription-id: ${{ secrets.TF_AZURE_SUBSCRIPTION_ID }}
       tenant-id: ${{ secrets.TF_AZURE_TENANT_ID }}
+      client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
