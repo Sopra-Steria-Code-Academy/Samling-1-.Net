@@ -17,7 +17,7 @@ env:
 jobs:
   build:
     name: Build
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     environment: ${{ inputs.environment-name }}
     steps:        
       - uses: actions/checkout@v4
@@ -48,7 +48,7 @@ jobs:
 
 
   deploy:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     needs: build
     environment:
       name: ${{ inputs.environment-name }}
